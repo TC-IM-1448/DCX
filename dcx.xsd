@@ -11,8 +11,8 @@
 
     <xs:annotation>
         <xs:documentation>
-            DCC - Digital Calibration Certificate
-            Copyright (c) 2019 - 2025 Danish Fundamental Metrology A/S (DFM) and Physikalisch-Technische Bundesanstalt (PTB)
+            DCX - Digital Calibration Exchange
+            Copyright (c) 2025 - 2026 Danish Fundamental Metrology A/S (DFM)
 
             This XML Scheme Definition (XSD) is free software: you can redistribute it and/or modify
             it under the terms of the GNU Lesser General Public License as published by
@@ -25,8 +25,19 @@
         </xs:documentation>
     </xs:annotation>
 
+<!--    ============================================================
+                            THE ROOT ELEMENT    
+        ============================================================ -->
     <xs:element name="digitalCalibrationExchange" type="dcx:digitalCalibrationExchangeType">
-    <!--Pointer keys to @id's of various types of elements-->
+
+
+<!--    ============================================================
+                        POINTER KEYS and KEYREFS
+        ============================================================
+        Pointer keys and keyrefs to @id's of selected element types 
+        to ensure referential integrity of the XML document.
+        ============================================================ -->
+
     <xs:key name="heading">
         <xs:selector xpath='dcx:statementList/dcx:heading'/>
         <xs:field xpath="@lang"/>
@@ -215,7 +226,7 @@
 
 
 <!--    ============================================================
-                 ROOT ELEMENT - of the Digital Certificate 
+            ROOT ELEMENT TYPE for Digital Calibration Exchange 
         ============================================================ -->
 
     <xs:complexType name="digitalCalibrationExchangeType">
@@ -252,13 +263,15 @@
         </xs:attribute>
     </xs:complexType>
 
-    <!--    ====================================================================
+<!--    ====================================================================
                                 transactionContent 
-    ============================================================================ -->
+        ==================================================================== -->
+
     <xs:complexType name="transactionContentFieldType">
         <xs:annotation>
             <xs:documentation>
                 The transactionContentField provides a specification of the file content as selectable in the dcx:transactionContentType. 
+                The value field is required and the content is selectable from a list of predefined values in the dcx:transactionContentType.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -269,6 +282,12 @@
     </xs:complexType>
 
     <xs:simpleType name="transactionContentType">
+        <xs:annotation>
+            <xs:documentation>
+                The transactionContentType is a list of predefined values defining the type of document presented in the file. 
+                The values are based on the most common types of digital calibration certificates and reports as well as templates and requests for these.
+            </xs:documentation>
+        </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="digitalCalibrationCertificate"/>
             <xs:enumeration value="digitalTestReport"/>
@@ -354,6 +373,13 @@
 
     <!--    ================= performanceLocationType ================================= -->
     <xs:complexType name="performanceLocationFieldType">
+        <xs:annotation>
+            <xs:documentation>
+                The performanceLocationFieldType is for specifying the location of the measurement performance. 
+                The value attribute is required with valid values from the dcx:performanceLocationType, being either
+                "atProvider" or "inField".
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="dcx:fieldType">
                 <xs:attribute name="value" type="dcx:performanceLocationType"/>
@@ -376,7 +402,7 @@
     <xs:complexType name="stringWithLangType">
         <xs:annotation>
             <xs:documentation>
-                A string element with an additional lang attribute for localization.
+                A string element with a "lang" attribute for identifying the language of the entered string.
             </xs:documentation>
         </xs:annotation>
         <xs:simpleContent>
@@ -390,7 +416,7 @@
     <xs:complexType name="fieldType">
         <xs:annotation>
             <xs:documentation>
-                In stead of a simple element this element can be used to provide the simple value as an attribute where the descriptions of the content is available in human readable form as subelements of the element types dcx:headingType.
+                In stead of a simple element this element can be used to provide the simple value as an attribute "@value" where a descriptions of the content can be provided as human readable form using subelements of type dcx:headingType.
                 usage example: 
                     <dcx:issueDate value="2024-11-29">
                         <dcx:heading lang="en">Issue date</dcx:heading>
@@ -641,6 +667,7 @@
     <xs:complexType name="dcxSoftwareType">
         <xs:annotation>
             <xs:documentation>
+                Used for describing the software used in generating the specific DCX file.
                 This type contain fields with field headings as well as sub-elements containing additional fields..
             </xs:documentation>
         </xs:annotation>
@@ -658,6 +685,7 @@
         <xs:annotation>
             <xs:documentation>
                 This type is a list of simple fields with field headings.
+                This is used when a declaration of accreditation is provided in a DCC document or test-report. 
 
                 Approved Calibration and Measurement Capability (CMC) applicable to results in this DCC.
                 Mandatory fields: 
@@ -694,6 +722,12 @@
     </xs:simpleType>
 
     <xs:complexType name="accreditationApplicabilityFieldType">
+        <xs:annotation>
+            <xs:documentation>
+                This type is used to specify the applicability of accreditation for results in a DCC document or test-report. 
+                the attribute "value" is required and the content is selectable from a list of predefined values in the dcx:accreditationApplicabilityType, being either "partial" (applies to some results, exceptions occur) or "wholly" (applies to all results).
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="dcx:fieldType">
                 <xs:attribute name="value" type="dcx:accreditationApplicabilityType"/>
@@ -704,19 +738,31 @@
     <xs:simpleType name="accreditationNormType">
         <xs:annotation>
             <xs:documentation>
-                List of recognized accreditation NORMs
+                Accreditation NORMs for calibration laboratories and reference material producers, selectable in the dcx:accreditationNormFieldType.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
             <xs:enumeration value="ISO 17025"/>
             <xs:enumeration value="ISO 17034"/>
-            <!-- <xs:enumeration value="ISO 17020"/>
+            <xs:enumeration value="ISO 17020"/>
+            <!--            
             <xs:enumeration value="ISO 17043"/>
             <xs:enumeration value="ISO 15189"/> -->
         </xs:restriction>
     </xs:simpleType>
   
     <xs:complexType name="accreditationNormFieldType">
+        <xs:annotation>
+            <xs:documentation>
+                The accreditationNormFieldType is for specifying the accreditation norm for calibration laboratories and reference material producers. 
+                The value attribute is required with valid values from the dcx:accreditationNormType, being selectable from a list of predefined values in the dcx:accreditationNormType.
+                The list is based on the most common accreditation norms for calibration laboratories and reference material producers.
+                Allowed values are:
+                    "ISO 17025",  
+                    "ISO 17034",
+                    "ISO 17020".
+            </xs:documentation>
+        </xs:annotation>
         <xs:complexContent>
             <xs:extension base="dcx:fieldType">
                 <xs:attribute name="value" type="dcx:accreditationNormType"/>
@@ -728,9 +774,9 @@
     <xs:complexType name="conformitySummaryType">
         <xs:annotation>
             <xs:documentation>
-                This type contain fields with field headings as well as sub-elements containing additional fields..
                 The conformitySummaryType is for the overall conformity of all devices measured in the report. 
-                A reference to a conformity statement explaining the criteria of the assessment is required.
+                A reference to a conformity statement explaining the criteria of the assessment is required in the decisionRuleRef element.
+                This type contain fields with field headings as well as sub-elements containing additional fields..
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -772,11 +818,13 @@
 
 
 <!--    ============================================================
-                 CONTACTS
+                    CONTACTS & LOCATION
+        ============================================================
+        Definitions of the ISO country and language codes are
+        given in the end of this document. 
         ============================================================ -->
 
     
-    <!-- definitions of the ISO country and language codes are given in the end of this document -->
 
     <xs:complexType name="contactAndLocationColumnHeadingsType">
         <xs:sequence>
@@ -975,7 +1023,7 @@
     <xs:complexType name="statementListType">
         <xs:annotation>
             <xs:documentation>
-                This type is a tabular of elements of statementType. For each field in the statementType a common columnHeading can be given here.
+                This type is a table structure consisting of a list of statementType elements. 
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -995,7 +1043,7 @@
         <xs:annotation>
             <xs:documentation>
                 A statement is a list of simple fields without field headings.
-                A number of statements can be organized as rows in a tabular with columnHeadings defined by the settingListType.
+                A number of statements can be organized as rows in a table structure with columnHeadings defined by the settingListType.
                 Each row may have a descriptive heading and body in multiple languages.
             </xs:documentation>
         </xs:annotation>
@@ -1012,6 +1060,8 @@
     <xs:simpleType name="statementCategoryType">
         <xs:annotation>
             <xs:documentation>
+                The statementCategoryType is for categorizing statements in a statementListType. The category attribute of the statementType is required and the content is selectable from a list of predefined values in the dcx:statementCategoryType.
+                The list of categories is based on the most common types of statements that are provided in DCC documents and test-reports. The categories are intended to provide a way to categorize statements in a consistent way across DCC documents and test-reports, which can be used for filtering and analysis of statements across documents or support machine actions.
             </xs:documentation>
         </xs:annotation>
             <xs:restriction base="xs:string">
@@ -1032,6 +1082,11 @@
     </xs:simpleType>
 
     <xs:complexType name="statementColumnHeadingsType">
+        <xs:annotation>
+            <xs:documentation>
+                The statementColumnHeadings are intended to provide a common columnHeading for each of the fields in the statementType elements.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="column" maxOccurs="unbounded">
                 <xs:complexType>
@@ -1051,6 +1106,9 @@
     <xs:simpleType name="statementColumnHeadingNamesType">
         <xs:annotation>
             <xs:documentation>
+                The name attribute of the column element in the statementColumnHeadings element must be one of the following values. 
+                These values correspond to the fields that can be used in the statementType elements in the statementListType. 
+                The column headings are intended to provide human readable descriptions of the content of the fields in the statementType elements.
             </xs:documentation>
         </xs:annotation>
             <xs:restriction base="xs:string">
@@ -1127,6 +1185,11 @@
 	</xs:simpleType>
     
     <xs:complexType name="equipmentColumnHeadingsType">
+        <xs:annotation>
+            <xs:documentation>
+                This type is intended to provide a common columnHeading for each of the fields in the equipmentType elements. The name attribute of the column element must be one of the following values, which correspond to the fields that can be used in the equipmentType elements in the equipmentListType. The column headings are intended to provide human readable descriptions of the content of the fields in the equipmentType elements.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="column" maxOccurs="unbounded">
                 <xs:complexType>
@@ -1146,6 +1209,9 @@
     <xs:simpleType name="equipmentColumnHeadingNamesType">
         <xs:annotation>
             <xs:documentation>
+                The name attribute of the column element in the equipmentColumnHeadings element must be one of the following values. 
+                These values correspond to the fields that can be used in the equipmentType elements in the equipmentListType. 
+                The column headings are intended to provide human readable descriptions of the content of the fields in the equipmentType elements.
             </xs:documentation>
         </xs:annotation>
             <xs:restriction base="xs:string">
@@ -1216,6 +1282,11 @@
     </xs:complexType>
     
     <xs:complexType name="settingColumnHeadingsType">
+        <xs:annotation>
+            <xs:documentation>
+                This type is intended to provide a common columnHeading for each of the fields in the settingType elements. The name attribute of the column element must be one of the following values, which correspond to the fields that can be used in the settingType elements in the settingListType. The column headings are intended to provide human readable descriptions of the content of the fields in the settingType elements.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="column" maxOccurs="unbounded">
                 <xs:complexType>
@@ -1235,6 +1306,7 @@
     <xs:simpleType name="settingColumnHeadingNamesType">
         <xs:annotation>
             <xs:documentation>
+                This type defines the valid names for column headings in the settingColumnHeadings element. The values correspond to the fields that can be used in the settingType elements in the settingListType. The column headings are intended to provide human readable descriptions of the content of the fields in the settingType elements.
             </xs:documentation>
         </xs:annotation>
             <xs:restriction base="xs:string">
@@ -1306,6 +1378,11 @@
 
 
     <xs:simpleType name="operationalStatusType">
+        <xs:annotation>
+            <xs:documentation>
+                This can be used to provide information about the process status ("as found"/"as left") at the point in time under which the measurement configuration was at the time of measurement, which can be relevant for the interpretation of the measurement results.
+            </xs:documentation>
+        </xs:annotation>
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="as found"/>
 			<xs:enumeration value="after adjustment"/>
@@ -1315,6 +1392,11 @@
 	</xs:simpleType>
 
     <xs:complexType name="measurementConfigColumnHeadingsType">
+        <xs:annotation>
+            <xs:documentation>
+                This type is intended to provide a common columnHeading for each of the fields in the measurementConfig elements. The name attribute of the column element must be one of the following values, which correspond to the fields that can be used in the measurementConfig elements in the measurement configuration. The column headings are intended to provide human readable descriptions of the content of the fields in the measurementConfig elements.
+            </xs:documentation>
+        </xs:annotation>
         <xs:sequence>
             <xs:element name="column" maxOccurs="unbounded">
                 <xs:complexType>
@@ -1334,6 +1416,7 @@
     <xs:simpleType name="measurementConfigColumnHeadingNamesType">
         <xs:annotation>
             <xs:documentation>
+                This type defines the valid names for column headings in the measurementConfigColumnHeadings element. The values correspond to the fields that can be used in the measurementConfigType elements in the measurementConfigListType. The column headings are intended to provide human readable descriptions of the content of the fields in the measurementConfigType elements.
             </xs:documentation>
         </xs:annotation>
             <xs:restriction base="xs:string">
@@ -1396,6 +1479,7 @@
                 <xs:enumeration value="ISO/IEC 80000" /> 
                 <xs:enumeration value="si-digital-framework.org" /> 
                 <xs:enumeration value="electropedia.org"/>
+                <xs:enumeration value="cdd.eic.ch"/>
                 <xs:enumeration value="mlayer.org" /> 
                 <xs:enumeration value="qudt.org" /> 
                 <xs:enumeration value="ucum.org" /> 
@@ -1476,7 +1560,7 @@
     <xs:complexType name="tableType">
         <xs:annotation>
             <xs:documentation>
-                This type is for arranging any measurement data into a table with rows and columns. It is also allowed to include images and plots in the form of references to embedded files.
+                This type is for arranging any measurement data into a table with columns and rows. It also allows inclusion of images and plots in the form of references to embedded files.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1516,7 +1600,7 @@
     <xs:complexType name="measurementResultListType">
         <xs:annotation>
         <xs:documentation>
-        Measurement results consists of a number of tables containing the calibration results with reference to relevant measuring configurations, references used and applicalble statments.
+            Measurement results consist of a number of tables containing the calibration results with reference to relevant measuring configurations, references used, and applicable statements.
         </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1604,7 +1688,7 @@
     <xs:complexType name="columnType">
         <xs:annotation>
             <xs:documentation>
-            Columns for measurement data and annotation of data. Each column is ordered directly by the client from the lists of allowed colTypes and quantityTypes.
+                Columns for measurement data and annotation of data. Each column is ordered directly by the client from the lists of allowed colTypes and quantityTypes.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1773,7 +1857,7 @@
     <xs:complexType name="targetValueType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                targetValueType is used for predefined calibration points, either for specification in request (DCR) hence typically agreed with the client before calibration or for documentation purposes.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1787,7 +1871,7 @@
     <xs:complexType name="expandedUncertaintyType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                expandedUncertaintyType is used to report the expanded uncertainty of a measurement result, which is typically calculated by multiplying the combined standard uncertainty by a coverage factor uncertaintyCoverageFactor_k.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1801,7 +1885,7 @@
     <xs:complexType name="correlationType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                correlationType is used to report the correlation between different measurement results or quantities.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1814,12 +1898,12 @@
     <xs:complexType name="correctionType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                correctionType is used together with the bias scope to express a correction for bias for material measures. The correction value is typically calculated as the difference between the measurement result and a reference value, e.g. the nominal value of an artefact or the display value of an active instrument.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base='dcx:realDataType'>
-                <xs:attribute name="dataCategory" type="xs:string" fixed="targetValue"/>
+                <xs:attribute name="dataCategory" type="xs:string" fixed="correction"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -1828,7 +1912,7 @@
     <xs:complexType name="statStdType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Used to report the standard deviation of a series of measurements, which is typically calculated as the square root of the variance of the measurements.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1841,7 +1925,7 @@
     <xs:complexType name="statMinType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Used to report the minimum value of a series of measurements.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1854,7 +1938,7 @@
     <xs:complexType name="statMaxType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Used to report the maximum value of a series of measurements.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1868,7 +1952,7 @@
     <xs:complexType name="conformityType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Used for pass/fail assessment of the calibration. Typically used in conjunction with a meta data column referring to a statement with description of the assessment basis. The conformity status is typically based on comparison of measurement results with specified limits, e.g. tolerance limits or acceptance limits, but may also be based on other criteria such as agreement with reference values or compliance with decision rules.
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -1889,7 +1973,7 @@
     <xs:complexType name="rowTagType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Used to report tags for rows in the data table, e.g. to identify calibration points or measurement series. These can e.g. be used by clients to link the data rows to own database identifiers, external references or metadata. 
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1903,7 +1987,7 @@
     <xs:complexType name="usedReferenceRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which reference standard was used for measuremensts of each row. The reference standard can be specified in the dcx:equipmentList (using category: referenceStandard) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1916,7 +2000,7 @@
     <xs:complexType name="methodRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which method was used for each measurement. The method can be specified in the dcx:statement (using category: method) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1929,7 +2013,7 @@
     <xs:complexType name="exceptionRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which exceptions apply to each measurement row. The exceptions can be specified in the dcx:statement (using category: exception) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1943,7 +2027,7 @@
     <xs:complexType name="traceabilityRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which traceability information applies to each measurement row. The traceability information can be specified in the dcx:statement (using category: traceability) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1956,7 +2040,7 @@
     <xs:complexType name="attentionRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which attention information applies to each measurement row. The attention information can be specified in the dcx:statement (using category: attention) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1969,7 +2053,7 @@
     <xs:complexType name="commentRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which comments apply to each measurement row. The comments can be specified in the dcx:statement (using category: comment) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1982,7 +2066,7 @@
     <xs:complexType name="decisionRuleRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which decision rules apply to each measurement row. The decision rules can be specified in the dcx:statement (using category: decisionRule) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -1995,7 +2079,7 @@
     <xs:complexType name="accreditationExceptionRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify if an accreditation exceptions apply (is true) at in a table row. The accreditation exceptions can be specified in the dcx:statement (using category: accreditationException) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2008,7 +2092,7 @@
     <xs:complexType name="normRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify which specific standards are used for each measurement row. The reference standards can be specified in the dcx:statement (using category: referenceStandard) and linked to the row by its id.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2021,7 +2105,7 @@
     <xs:complexType name="measurementSeriesRefType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to reference which measurement series is used for each measurement row. The measurement series should be provided in dcx:measurementSeries data-tables.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2034,7 +2118,7 @@
     <xs:complexType name="uncertaintyCoverageFactor_kType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the coverage factor k for the expanded uncertainty of a measurement result. The coverage factor k is typically used to calculate the expanded uncertainty by multiplying it with the combined standard uncertainty.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2047,12 +2131,12 @@
     <xs:complexType name="uncertaintyCoverageProbabilityType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the coverage probability for the expanded uncertainty of a measurement result. 
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base='dcx:realDataType'>
-                <xs:attribute name="dataCategory" type="xs:string" fixed="uncertaintyCoverageFactor_k"/>
+                <xs:attribute name="dataCategory" type="xs:string" fixed="uncertaintyCoverageProbability"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -2060,7 +2144,7 @@
     <xs:complexType  name="toleranceLimitLowerType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the lower tolerance limit for a measurement result.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2073,7 +2157,7 @@
     <xs:complexType name="toleranceLimitUpperType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the upper tolerance limit for a measurement result.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2086,7 +2170,7 @@
     <xs:complexType name="acceptanceLimitLowerType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the lower acceptance limit for a measurement result.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2100,7 +2184,7 @@
     <xs:complexType name="acceptanceLimitUpperType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the upper acceptance limit for a measurement result.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2114,7 +2198,10 @@
     <xs:complexType name="approachToTargetType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the approach to target for a measurement result. 
+                The approach to target can either be: 
+                    a: from above
+                    b: from below
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -2134,7 +2221,7 @@
     <xs:complexType name="instrumentResolutionType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify the resolution of the instrument for a measurement result.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2192,7 +2279,7 @@
     <xs:complexType name="otherType">
         <xs:annotation>
             <xs:documentation>
-                Documentation not written yet.
+                Can be used to specify other types of data that do not fall into the predefined categories.
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
@@ -2231,7 +2318,7 @@
         <xs:annotation>
             <xs:documentation>
                 The embeddedFileType defines a type which allows to add binary encoded files to the measurement result
-                section.
+                section. This can be used to e.g. attach: measurement specification drawings, logo images, plots of measurement results and calibration curves. 
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
@@ -2245,6 +2332,11 @@
 
 
         <xs:complexType name="embeddedFileColumnHeadingsType">
+            <xs:annotation>
+                <xs:documentation>
+                    Used to provide common headings for the embeddedFile sub elements. 
+                </xs:documentation>
+            </xs:annotation>
             <xs:sequence>
                 <xs:element name="column" maxOccurs="unbounded">
                     <xs:complexType>
@@ -2286,7 +2378,6 @@
         =============================================================
             - country coes ISO 3166
             - language codes ISO 639
-            - Service Categories
             - quantity codes ISO 80000 
         =============================================================-->
     
@@ -3363,5 +3454,3 @@
     </xs:simpleType>
 
 </xs:schema>
-
-
