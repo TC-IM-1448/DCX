@@ -246,7 +246,7 @@
         <xs:attribute name="schemaVersion" use="required">
             <xs:simpleType>
                 <xs:restriction base="xs:string">
-                    <xs:pattern value="1\.0\.0"/>
+                    <xs:pattern value="1\.1\.0"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
@@ -3363,4 +3363,5 @@
     </xs:simpleType>
 
 </xs:schema>
+
 
