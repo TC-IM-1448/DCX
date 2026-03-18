@@ -1470,6 +1470,26 @@
         <xs:attribute name="statementRefs" type="xs:IDREFS" use="optional"/>
     </xs:complexType>
 
+    <xs:simpleType name="quantityUnitDefRefType">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                A reference to a quantityUnitDef id, or the sentinel value "NULL" when no
+                definition is referenced. The sentinel allows uniqueness constraints to treat
+                unbound columns uniformly without requiring a dummy ID element in the instance.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:union>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="NULL"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:IDREF"/>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
     <xs:simpleType name="quantityCodeSystemType">
         <xs:annotation>
             <xs:documentation>
@@ -1739,7 +1759,8 @@
         <xs:attribute name="dataCategoryRef" type="dcx:dataCategoryType" use="required"/>
         <xs:attribute name="quantity" type="dcx:quantityType" use="required"/>
         <xs:attribute name="unit" type="dcx:unitType" use="required"/>
-		<xs:attribute name="quantityUnitDefRef" type="xs:IDREF" use="optional" default="NULL"/>
+		<!-- <xs:attribute name="quantityUnitDefRef" type="xs:IDREF" use="optional" default="NULL"/> -->
+        <xs:attribute name="quantityUnitDefRef" type="dcx:quantityUnitDefRefType" use="optional" default="NULL"/>
     </xs:complexType>
 
     
@@ -1823,14 +1844,14 @@
 				Based on xs:string.
                 
 				Only unit expressions which can be parsed with the BIPM SI-Digital-Framework tool (https://si-digital-framework.org/SI/unitExpr) are permitted.
-				
-				The unit expressions are hence in accordance to the BIPM SI brochure unit, using '.' as unit multiplication sign. Examples: 
+                The unit expressions are hence in accordance to the BIPM SI brochure unit, using '.' as unit multiplication sign. Examples: 
 
                     "kg.m.s-2" for Newton, "kg.m2.-3.A" for Watt, "1.s-1" for Hertz, "m.s-2" for acceleration, "°C" for degree Celsius, etc.
 
                 Units expressions starting with a '#' followed by a UAA, UAB,... code (e.g. #UAA000) are reserved for units defined within the IEC TS 62720 "Identification of units of measurement for computer-based processing" and their definitions can be found at https://cdd.iec.ch/ (look in the search section)
                 For convenience the #UAA0000 code is followed by a name indicating the human readable unit expression. (e.g. #UAA000_% for percentage, #UAA001_%/Ω for % per Ohm, #UAA002_%/° for % per degree, #UAA003_%/°C for % per degree Celsius, etc.)
                 Note: there might be some exceptions from the expressions in the DCC as these are not permitted by xs:pattern.
+                CDD version: V2.0018.0002  (downloaded on 2026-03-10)
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
@@ -2888,6 +2909,14 @@
 				https://si-digital-framework.org/SI/
 				TODO: Description on how to parse the restriction expressions. 
 						5-2|Celsius Temperature|°C |  
+
+
+                Quantitites starting with "#" are quantities as defined in https://cdd.iec.ch and according to IEC TS 62720:2017-01. 
+                The same format is used as for the ISO 80000 series, but the item number is replaced with the CDD number, which is 
+                preceded by a "#", and the quantity name and unit are as defined in the CDD using the CDD unit id representation.
+                Example:
+                    "#UAD104|mass|#UAA594"
+                    "#UAD057|gas leak rate|#UAA327"
             </xs:documentation>
         </xs:annotation>
 		<xs:restriction base="xs:string">
