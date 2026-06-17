@@ -321,36 +321,41 @@
     <xsl:param name="core"/>
     <xsl:if test="$core">
       <div class="coredata-block">
-        <xsl:for-each select="$core/*">
-          <div class="coredata-line">
-            <span class="coredata-key">
-              <xsl:choose>
-                <xsl:when test="dcx:heading">
-                  <xsl:call-template name="label-by-lang">
-                    <xsl:with-param name="nodes" select="dcx:heading"/>
-                    <xsl:with-param name="fallback" select="local-name()"/>
-                  </xsl:call-template>
-                </xsl:when>
-                <xsl:otherwise>
-                  <xsl:value-of select="local-name()"/>
-                </xsl:otherwise>
-              </xsl:choose>
-              <xsl:text>: </xsl:text>
-            </span>
-            <xsl:choose>
-              <xsl:when test="@value">
-                <xsl:call-template name="render-linked-value">
-                  <xsl:with-param name="value" select="@value"/>
-                </xsl:call-template>
-              </xsl:when>
-              <xsl:otherwise>
-                <xsl:call-template name="render-linked-node">
-                  <xsl:with-param name="node" select="."/>
-                </xsl:call-template>
-              </xsl:otherwise>
-            </xsl:choose>
-          </div>
-        </xsl:for-each>
+        <table class="admin-table coredata-table">
+          <tbody>
+            <xsl:for-each select="$core/*">
+              <tr>
+                <th>
+                  <xsl:choose>
+                    <xsl:when test="dcx:heading">
+                      <xsl:call-template name="label-by-lang">
+                        <xsl:with-param name="nodes" select="dcx:heading"/>
+                        <xsl:with-param name="fallback" select="local-name()"/>
+                      </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:value-of select="local-name()"/>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </th>
+                <td>
+                  <xsl:choose>
+                    <xsl:when test="@value">
+                      <xsl:call-template name="render-linked-value">
+                        <xsl:with-param name="value" select="@value"/>
+                      </xsl:call-template>
+                    </xsl:when>
+                    <xsl:otherwise>
+                      <xsl:call-template name="render-linked-node">
+                        <xsl:with-param name="node" select="."/>
+                      </xsl:call-template>
+                    </xsl:otherwise>
+                  </xsl:choose>
+                </td>
+              </tr>
+            </xsl:for-each>
+          </tbody>
+        </table>
       </div>
     </xsl:if>
   </xsl:template>
@@ -448,6 +453,37 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="render-contact-value-row">
+    <xsl:param name="cols"/>
+    <xsl:param name="colName"/>
+    <xsl:param name="value"/>
+    <xsl:param name="isImageRefs" select="'no'"/>
+    <xsl:if test="normalize-space($value)">
+      <tr>
+        <th>
+          <xsl:call-template name="label-by-lang">
+            <xsl:with-param name="nodes" select="$cols/dcx:column[@name = $colName]/dcx:heading"/>
+            <xsl:with-param name="fallback" select="''"/>
+          </xsl:call-template>
+        </th>
+        <td>
+          <xsl:choose>
+            <xsl:when test="$isImageRefs = 'yes'">
+              <xsl:call-template name="render-image-ref-values">
+                <xsl:with-param name="text" select="$value"/>
+              </xsl:call-template>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:call-template name="render-linked-value">
+                <xsl:with-param name="value" select="$value"/>
+              </xsl:call-template>
+            </xsl:otherwise>
+          </xsl:choose>
+        </td>
+      </tr>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template name="render-contact-node">
     <xsl:param name="node"/>
     <xsl:param name="cols"/>
@@ -467,36 +503,40 @@
           </div>
         </xsl:if>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'@id'"/>
-          <xsl:with-param name="value" select="$node/@id"/>
-        </xsl:call-template>
+        <table class="admin-table contact-table">
+          <tbody>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'@id'"/>
+              <xsl:with-param name="value" select="$node/@id"/>
+            </xsl:call-template>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'@imageRefs'"/>
-          <xsl:with-param name="value" select="$node/@imageRefs"/>
-          <xsl:with-param name="isImageRefs" select="'yes'"/>
-        </xsl:call-template>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'@imageRefs'"/>
+              <xsl:with-param name="value" select="$node/@imageRefs"/>
+              <xsl:with-param name="isImageRefs" select="'yes'"/>
+            </xsl:call-template>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'name'"/>
-          <xsl:with-param name="value" select="$node/dcx:name[1]"/>
-        </xsl:call-template>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'name'"/>
+              <xsl:with-param name="value" select="$node/dcx:name[1]"/>
+            </xsl:call-template>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'VATIN'"/>
-          <xsl:with-param name="value" select="$node/dcx:VATIN[1]"/>
-        </xsl:call-template>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'VATIN'"/>
+              <xsl:with-param name="value" select="$node/dcx:VATIN[1]"/>
+            </xsl:call-template>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'url'"/>
-          <xsl:with-param name="value" select="$node/dcx:url[1]"/>
-        </xsl:call-template>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'url'"/>
+              <xsl:with-param name="value" select="$node/dcx:url[1]"/>
+            </xsl:call-template>
+          </tbody>
+        </table>
 
         <xsl:variable name="addressLine">
           <xsl:value-of select="$node/dcx:address/dcx:street"/>
@@ -564,40 +604,54 @@
           <xsl:when test="self::dcx:location">
             <div class="location-card">
               <div class="location-col">
-                <xsl:call-template name="render-contact-value-line">
-                  <xsl:with-param name="cols" select="$cols"/>
-                  <xsl:with-param name="colName" select="'address'"/>
-                  <xsl:with-param name="value" select="$addressLine"/>
-                </xsl:call-template>
+                <table class="admin-table location-table">
+                  <tbody>
+                    <xsl:call-template name="render-contact-value-row">
+                      <xsl:with-param name="cols" select="$cols"/>
+                      <xsl:with-param name="colName" select="'address'"/>
+                      <xsl:with-param name="value" select="$addressLine"/>
+                    </xsl:call-template>
+                  </tbody>
+                </table>
               </div>
               <div class="location-col">
-                <xsl:call-template name="render-contact-value-line">
-                  <xsl:with-param name="cols" select="$cols"/>
-                  <xsl:with-param name="colName" select="'contactInfo'"/>
-                  <xsl:with-param name="value" select="$contactInfoLine"/>
-                </xsl:call-template>
+                <table class="admin-table location-table">
+                  <tbody>
+                    <xsl:call-template name="render-contact-value-row">
+                      <xsl:with-param name="cols" select="$cols"/>
+                      <xsl:with-param name="colName" select="'contactInfo'"/>
+                      <xsl:with-param name="value" select="$contactInfoLine"/>
+                    </xsl:call-template>
+                  </tbody>
+                </table>
               </div>
             </div>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:call-template name="render-contact-value-line">
-              <xsl:with-param name="cols" select="$cols"/>
-              <xsl:with-param name="colName" select="'address'"/>
-              <xsl:with-param name="value" select="$addressLine"/>
-            </xsl:call-template>
-            <xsl:call-template name="render-contact-value-line">
-              <xsl:with-param name="cols" select="$cols"/>
-              <xsl:with-param name="colName" select="'contactInfo'"/>
-              <xsl:with-param name="value" select="$contactInfoLine"/>
-            </xsl:call-template>
+            <table class="admin-table contact-table">
+              <tbody>
+                <xsl:call-template name="render-contact-value-row">
+                  <xsl:with-param name="cols" select="$cols"/>
+                  <xsl:with-param name="colName" select="'address'"/>
+                  <xsl:with-param name="value" select="$addressLine"/>
+                </xsl:call-template>
+                <xsl:call-template name="render-contact-value-row">
+                  <xsl:with-param name="cols" select="$cols"/>
+                  <xsl:with-param name="colName" select="'contactInfo'"/>
+                  <xsl:with-param name="value" select="$contactInfoLine"/>
+                </xsl:call-template>
+              </tbody>
+            </table>
           </xsl:otherwise>
         </xsl:choose>
 
-        <xsl:call-template name="render-contact-value-line">
-          <xsl:with-param name="cols" select="$cols"/>
-          <xsl:with-param name="colName" select="'onsiteDirections'"/>
-          <xsl:with-param name="value" select="$node/dcx:onsiteDirections"/>
-        </xsl:call-template>
+        <table class="admin-table contact-table">
+          <tbody>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'onsiteDirections'"/>
+              <xsl:with-param name="value" select="$node/dcx:onsiteDirections"/>
+            </xsl:call-template>
 
         <xsl:if test="$node/dcx:geoPosition">
           <xsl:variable name="geoLine">
@@ -611,7 +665,7 @@
               <xsl:value-of select="$node/dcx:geoPosition/dcx:altitude"/>
             </xsl:if>
           </xsl:variable>
-          <xsl:call-template name="render-contact-value-line">
+          <xsl:call-template name="render-contact-value-row">
             <xsl:with-param name="cols" select="$cols"/>
             <xsl:with-param name="colName" select="'geoPosition'"/>
             <xsl:with-param name="value" select="$geoLine"/>
@@ -619,12 +673,14 @@
         </xsl:if>
 
         <xsl:for-each select="$node/dcx:body">
-          <xsl:call-template name="render-contact-value-line">
+          <xsl:call-template name="render-contact-value-row">
             <xsl:with-param name="cols" select="$cols"/>
             <xsl:with-param name="colName" select="'body'"/>
             <xsl:with-param name="value" select="."/>
           </xsl:call-template>
         </xsl:for-each>
+          </tbody>
+        </table>
       </div>
     </xsl:if>
   </xsl:template>
@@ -673,6 +729,9 @@
           .coredata-person-heading { margin-top: 0.12rem; font-weight: 700; color: #555; }
           .coredata-line { margin-top: 0.12rem; color: #444; }
           .coredata-key { font-weight: 700; color: #555; }
+          .admin-table { border-collapse: collapse; width: 100%; margin-top: 0.12rem; }
+          .admin-table th, .admin-table td { border: 1px solid #cfcfcf; padding: 0.3rem 0.45rem; text-align: left; vertical-align: top; }
+          .admin-table th { width: 32%; background: #f7f7f7; font-weight: 700; color: #444; }
           .contact-list-block { margin: 0 0 0.8rem 0; }
           .contact-block { margin: 0 0 0.55rem 0; }
           .contact-title { margin-top: 0.15rem; font-weight: 700; color: #333; }
