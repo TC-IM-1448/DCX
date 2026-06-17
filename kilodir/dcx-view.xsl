@@ -453,6 +453,11 @@
     <xsl:param name="cols"/>
     <xsl:if test="$node">
       <div class="contact-block">
+        <xsl:if test="$node/@id">
+          <xsl:attribute name="id">
+            <xsl:value-of select="$node/@id"/>
+          </xsl:attribute>
+        </xsl:if>
         <xsl:if test="$node/dcx:heading">
           <div class="contact-title">
             <xsl:call-template name="label-by-lang">
@@ -691,23 +696,6 @@
         </style>
       </head>
       <body>
-        <!-- Global anchor targets for all IDs and tableIds to support in-document links. -->
-        <div style="display:none">
-          <xsl:for-each select="/dcx:digitalCalibrationExchange//*[@id or @tableId]">
-            <span>
-              <xsl:attribute name="id">
-                <xsl:choose>
-                  <xsl:when test="@id">
-                    <xsl:value-of select="@id"/>
-                  </xsl:when>
-                  <xsl:otherwise>
-                    <xsl:value-of select="@tableId"/>
-                  </xsl:otherwise>
-                </xsl:choose>
-              </xsl:attribute>
-            </span>
-          </xsl:for-each>
-        </div>
 
         <div class="header-grid">
           <div class="header-col left">
@@ -998,6 +986,11 @@
         <xsl:variable name="table" select="."/>
         <xsl:variable name="config" select="$root/dcx:measurementConfigList/dcx:measurementConfig[@id = $table/@measurementConfigRef][1]"/>
 
+        <div>
+          <xsl:attribute name="id">
+            <xsl:value-of select="@tableId"/>
+          </xsl:attribute>
+
         <h4 class="table-title">
           <xsl:call-template name="label-by-lang">
             <xsl:with-param name="nodes" select="dcx:heading"/>
@@ -1108,6 +1101,7 @@
             </xsl:choose>
           </tbody>
         </table>
+        </div>
       </xsl:for-each>
     </div>
   </xsl:template>
