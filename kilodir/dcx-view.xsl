@@ -484,6 +484,49 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="render-address-value">
+    <xsl:param name="node"/>
+    <xsl:if test="$node/dcx:address">
+      <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo)">
+        <div class="address-line">
+          <xsl:value-of select="$node/dcx:address/dcx:street"/>
+          <xsl:if test="normalize-space($node/dcx:address/dcx:streetNo)">
+            <xsl:text> </xsl:text>
+            <xsl:value-of select="$node/dcx:address/dcx:streetNo"/>
+          </xsl:if>
+        </div>
+      </xsl:if>
+      <xsl:if test="normalize-space($node/dcx:address/dcx:postOfficeBox)">
+        <div class="address-line">
+          <xsl:value-of select="$node/dcx:address/dcx:postOfficeBox"/>
+        </div>
+      </xsl:if>
+      <xsl:if test="normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city)">
+        <div class="address-line">
+          <xsl:value-of select="$node/dcx:address/dcx:postalCode"/>
+          <xsl:if test="normalize-space($node/dcx:address/dcx:postalCode) and normalize-space($node/dcx:address/dcx:city)">
+            <xsl:text> </xsl:text>
+          </xsl:if>
+          <xsl:value-of select="$node/dcx:address/dcx:city"/>
+        </div>
+      </xsl:if>
+      <xsl:if test="normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state)">
+        <div class="address-line">
+          <xsl:value-of select="$node/dcx:address/dcx:district"/>
+          <xsl:if test="normalize-space($node/dcx:address/dcx:district) and normalize-space($node/dcx:address/dcx:state)">
+            <xsl:text>, </xsl:text>
+          </xsl:if>
+          <xsl:value-of select="$node/dcx:address/dcx:state"/>
+        </div>
+      </xsl:if>
+      <xsl:if test="normalize-space($node/dcx:address/dcx:country)">
+        <div class="address-line">
+          <xsl:value-of select="$node/dcx:address/dcx:country"/>
+        </div>
+      </xsl:if>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template name="render-contact-node">
     <xsl:param name="node"/>
     <xsl:param name="cols"/>
@@ -538,38 +581,6 @@
           </tbody>
         </table>
 
-        <xsl:variable name="addressLine">
-          <xsl:value-of select="$node/dcx:address/dcx:street"/>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:streetNo)">
-            <xsl:text> </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:streetNo"/>
-          </xsl:if>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:postOfficeBox)">
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:postOfficeBox"/>
-          </xsl:if>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city)">
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:postalCode"/>
-            <xsl:if test="normalize-space($node/dcx:address/dcx:postalCode) and normalize-space($node/dcx:address/dcx:city)">
-              <xsl:text> </xsl:text>
-            </xsl:if>
-            <xsl:value-of select="$node/dcx:address/dcx:city"/>
-          </xsl:if>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:district)">
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:district"/>
-          </xsl:if>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:state)">
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:state"/>
-          </xsl:if>
-          <xsl:if test="normalize-space($node/dcx:address/dcx:country)">
-            <xsl:text>, </xsl:text>
-            <xsl:value-of select="$node/dcx:address/dcx:country"/>
-          </xsl:if>
-        </xsl:variable>
-
         <xsl:variable name="contactInfoLine">
           <xsl:if test="normalize-space($node/dcx:contactInfo/dcx:attPerson)">
             <xsl:value-of select="$node/dcx:contactInfo/dcx:attPerson"/>
@@ -606,11 +617,21 @@
               <div class="location-col">
                 <table class="admin-table location-table">
                   <tbody>
-                    <xsl:call-template name="render-contact-value-row">
-                      <xsl:with-param name="cols" select="$cols"/>
-                      <xsl:with-param name="colName" select="'address'"/>
-                      <xsl:with-param name="value" select="$addressLine"/>
-                    </xsl:call-template>
+                    <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo) or normalize-space($node/dcx:address/dcx:postOfficeBox) or normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city) or normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state) or normalize-space($node/dcx:address/dcx:country)">
+                      <tr>
+                        <th>
+                          <xsl:call-template name="label-by-lang">
+                            <xsl:with-param name="nodes" select="$cols/dcx:column[@name = 'address']/dcx:heading"/>
+                            <xsl:with-param name="fallback" select="''"/>
+                          </xsl:call-template>
+                        </th>
+                        <td class="address-cell">
+                          <xsl:call-template name="render-address-value">
+                            <xsl:with-param name="node" select="$node"/>
+                          </xsl:call-template>
+                        </td>
+                      </tr>
+                    </xsl:if>
                   </tbody>
                 </table>
               </div>
@@ -630,11 +651,21 @@
           <xsl:otherwise>
             <table class="admin-table contact-table">
               <tbody>
-                <xsl:call-template name="render-contact-value-row">
-                  <xsl:with-param name="cols" select="$cols"/>
-                  <xsl:with-param name="colName" select="'address'"/>
-                  <xsl:with-param name="value" select="$addressLine"/>
-                </xsl:call-template>
+                <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo) or normalize-space($node/dcx:address/dcx:postOfficeBox) or normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city) or normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state) or normalize-space($node/dcx:address/dcx:country)">
+                  <tr>
+                    <th>
+                      <xsl:call-template name="label-by-lang">
+                        <xsl:with-param name="nodes" select="$cols/dcx:column[@name = 'address']/dcx:heading"/>
+                        <xsl:with-param name="fallback" select="''"/>
+                      </xsl:call-template>
+                    </th>
+                    <td class="address-cell">
+                      <xsl:call-template name="render-address-value">
+                        <xsl:with-param name="node" select="$node"/>
+                      </xsl:call-template>
+                    </td>
+                  </tr>
+                </xsl:if>
                 <xsl:call-template name="render-contact-value-row">
                   <xsl:with-param name="cols" select="$cols"/>
                   <xsl:with-param name="colName" select="'contactInfo'"/>
@@ -738,6 +769,8 @@
           .location-card { display: table; width: 100%; table-layout: fixed; margin-top: 0.12rem; }
           .location-col { display: table-cell; width: 50%; vertical-align: top; padding-right: 0.45rem; }
           .location-col + .location-col { padding-right: 0; padding-left: 0.45rem; }
+          .address-cell .address-line { margin-top: 0.08rem; }
+          .address-cell .address-line:first-child { margin-top: 0; }
           .contact-line { margin-top: 0.12rem; color: #444; }
           .contact-key { font-weight: 700; color: #555; }
           .embedded-image { max-height: 100px; max-width: 320px; border: 0; padding: 0; background: transparent; }
