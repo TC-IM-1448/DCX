@@ -23,16 +23,48 @@
          | dcx:measurementConfigList/dcx:measurementConfig/@*"
          use="concat(generate-id(ancestor::*[self::dcx:equipmentList or self::dcx:statementList or self::dcx:settingList or self::dcx:measurementConfigList][1]), '|', local-name())"/>
 
+    <xsl:key name="kLang" match="@lang" use="."/>
+
   <!-- Step 1 default language is English. -->
   <xsl:param name="defaultLang" select="'en'"/>
+  <!-- Prefer first requested language from coreData/requestedLanguages; fallback to defaultLang. -->
+  <xsl:variable name="effectiveDefaultLang" select="substring-before(concat(normalize-space(concat(/dcx:digitalCalibrationExchange/dcx:administrativeData/dcx:coreData/dcx:requestedLanguages/@value, ' ', $defaultLang)), ' '), ' ')"/>
 
   <!-- Select text by language with fallback to first available node or fallback text. -->
   <xsl:template name="label-by-lang">
     <xsl:param name="nodes"/>
     <xsl:param name="fallback" select="''"/>
+    <xsl:param name="mode" select="'toggle'"/>
     <xsl:choose>
-      <xsl:when test="$nodes[@lang = $defaultLang]">
-        <xsl:value-of select="$nodes[@lang = $defaultLang][1]"/>
+      <xsl:when test="$mode = 'text'">
+        <xsl:choose>
+          <xsl:when test="$nodes[@lang = $effectiveDefaultLang]">
+            <xsl:value-of select="$nodes[@lang = $effectiveDefaultLang][1]"/>
+          </xsl:when>
+          <xsl:when test="$nodes">
+            <xsl:value-of select="$nodes[1]"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="$fallback"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:when>
+      <xsl:when test="$nodes[@lang]">
+        <xsl:for-each select="$nodes[@lang]">
+          <span class="i18n-value">
+            <xsl:attribute name="data-lang">
+              <xsl:value-of select="@lang"/>
+            </xsl:attribute>
+            <xsl:attribute name="style">
+              <xsl:choose>
+                <xsl:when test="@lang = $effectiveDefaultLang">display:inline;</xsl:when>
+                <xsl:when test="not($nodes[@lang = $effectiveDefaultLang]) and position() = 1">display:inline;</xsl:when>
+                <xsl:otherwise>display:none;</xsl:otherwise>
+              </xsl:choose>
+            </xsl:attribute>
+            <xsl:value-of select="."/>
+          </span>
+        </xsl:for-each>
       </xsl:when>
       <xsl:when test="$nodes">
         <xsl:value-of select="$nodes[1]"/>
@@ -41,6 +73,39 @@
         <xsl:value-of select="$fallback"/>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="render-language-switcher">
+    <xsl:variable name="langs" select="/dcx:digitalCalibrationExchange//@lang[normalize-space(.) and generate-id() = generate-id(key('kLang', .)[1])]"/>
+    <xsl:if test="$langs">
+      <div class="lang-switcher">
+        <div class="lang-label">Language</div>
+        <div class="lang-tablist" role="tablist" aria-label="Language selector">
+          <xsl:for-each select="$langs">
+            <button type="button" role="tab" onclick="dcxSetLang(this.getAttribute('data-lang'))">
+              <xsl:attribute name="class">
+                <xsl:choose>
+                  <xsl:when test=". = $effectiveDefaultLang">lang-tab active</xsl:when>
+                  <xsl:when test="position() = 1 and not($langs[. = $effectiveDefaultLang])">lang-tab active</xsl:when>
+                  <xsl:otherwise>lang-tab</xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:attribute name="data-lang">
+                <xsl:value-of select="."/>
+              </xsl:attribute>
+              <xsl:attribute name="aria-selected">
+                <xsl:choose>
+                  <xsl:when test=". = $effectiveDefaultLang">true</xsl:when>
+                  <xsl:when test="position() = 1 and not($langs[. = $effectiveDefaultLang])">true</xsl:when>
+                  <xsl:otherwise>false</xsl:otherwise>
+                </xsl:choose>
+              </xsl:attribute>
+              <xsl:value-of select="."/>
+            </button>
+          </xsl:for-each>
+        </div>
+      </div>
+    </xsl:if>
   </xsl:template>
 
   <!-- Render a single token: link it when it matches an existing @id, else plain text. -->
@@ -611,70 +676,30 @@
           </xsl:if>
         </xsl:variable>
 
-        <xsl:choose>
-          <xsl:when test="self::dcx:location">
-            <div class="location-card">
-              <div class="location-col">
-                <table class="admin-table location-table">
-                  <tbody>
-                    <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo) or normalize-space($node/dcx:address/dcx:postOfficeBox) or normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city) or normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state) or normalize-space($node/dcx:address/dcx:country)">
-                      <tr>
-                        <th>
-                          <xsl:call-template name="label-by-lang">
-                            <xsl:with-param name="nodes" select="$cols/dcx:column[@name = 'address']/dcx:heading"/>
-                            <xsl:with-param name="fallback" select="''"/>
-                          </xsl:call-template>
-                        </th>
-                        <td class="address-cell">
-                          <xsl:call-template name="render-address-value">
-                            <xsl:with-param name="node" select="$node"/>
-                          </xsl:call-template>
-                        </td>
-                      </tr>
-                    </xsl:if>
-                  </tbody>
-                </table>
-              </div>
-              <div class="location-col">
-                <table class="admin-table location-table">
-                  <tbody>
-                    <xsl:call-template name="render-contact-value-row">
-                      <xsl:with-param name="cols" select="$cols"/>
-                      <xsl:with-param name="colName" select="'contactInfo'"/>
-                      <xsl:with-param name="value" select="$contactInfoLine"/>
-                    </xsl:call-template>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </xsl:when>
-          <xsl:otherwise>
-            <table class="admin-table contact-table">
-              <tbody>
-                <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo) or normalize-space($node/dcx:address/dcx:postOfficeBox) or normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city) or normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state) or normalize-space($node/dcx:address/dcx:country)">
-                  <tr>
-                    <th>
-                      <xsl:call-template name="label-by-lang">
-                        <xsl:with-param name="nodes" select="$cols/dcx:column[@name = 'address']/dcx:heading"/>
-                        <xsl:with-param name="fallback" select="''"/>
-                      </xsl:call-template>
-                    </th>
-                    <td class="address-cell">
-                      <xsl:call-template name="render-address-value">
-                        <xsl:with-param name="node" select="$node"/>
-                      </xsl:call-template>
-                    </td>
-                  </tr>
-                </xsl:if>
-                <xsl:call-template name="render-contact-value-row">
-                  <xsl:with-param name="cols" select="$cols"/>
-                  <xsl:with-param name="colName" select="'contactInfo'"/>
-                  <xsl:with-param name="value" select="$contactInfoLine"/>
-                </xsl:call-template>
-              </tbody>
-            </table>
-          </xsl:otherwise>
-        </xsl:choose>
+        <table class="admin-table contact-table">
+          <tbody>
+            <xsl:if test="normalize-space($node/dcx:address/dcx:street) or normalize-space($node/dcx:address/dcx:streetNo) or normalize-space($node/dcx:address/dcx:postOfficeBox) or normalize-space($node/dcx:address/dcx:postalCode) or normalize-space($node/dcx:address/dcx:city) or normalize-space($node/dcx:address/dcx:district) or normalize-space($node/dcx:address/dcx:state) or normalize-space($node/dcx:address/dcx:country)">
+              <tr>
+                <th>
+                  <xsl:call-template name="label-by-lang">
+                    <xsl:with-param name="nodes" select="$cols/dcx:column[@name = 'address']/dcx:heading"/>
+                    <xsl:with-param name="fallback" select="''"/>
+                  </xsl:call-template>
+                </th>
+                <td class="address-cell">
+                  <xsl:call-template name="render-address-value">
+                    <xsl:with-param name="node" select="$node"/>
+                  </xsl:call-template>
+                </td>
+              </tr>
+            </xsl:if>
+            <xsl:call-template name="render-contact-value-row">
+              <xsl:with-param name="cols" select="$cols"/>
+              <xsl:with-param name="colName" select="'contactInfo'"/>
+              <xsl:with-param name="value" select="$contactInfoLine"/>
+            </xsl:call-template>
+          </tbody>
+        </table>
 
         <table class="admin-table contact-table">
           <tbody>
@@ -738,10 +763,18 @@
           <xsl:call-template name="label-by-lang">
             <xsl:with-param name="nodes" select="/dcx:digitalCalibrationExchange/dcx:title/dcx:heading"/>
             <xsl:with-param name="fallback" select="'Calibration Certificate'"/>
+            <xsl:with-param name="mode" select="'text'"/>
           </xsl:call-template>
         </title>
         <style type="text/css">
           body { font-family: Arial, Helvetica, sans-serif; margin: 1.2rem; color: #222; }
+          .lang-switcher { margin: 0 0 0.8rem 0; color: #444; }
+          .lang-label { margin-bottom: 0.35rem; font-size: 0.9rem; font-weight: 700; }
+          .lang-tablist { display: inline-flex; border: 1px solid #cfcfcf; border-radius: 6px; overflow: hidden; background: #fff; }
+          .lang-tab { border: 0; border-right: 1px solid #cfcfcf; background: #f7f7f7; color: #444; padding: 0.25rem 0.65rem; font-size: 0.88rem; cursor: pointer; }
+          .lang-tab:last-child { border-right: 0; }
+          .lang-tab.active { background: #3e6ea8; color: #fff; }
+          .i18n-value { white-space: normal; }
           .header-grid { display: table; width: 100%; margin: 0 0 1rem 0; table-layout: fixed; }
           .header-col { display: table-cell; vertical-align: top; width: 50%; }
           .header-col.left { padding-right: 0.45rem; }
@@ -766,19 +799,16 @@
           .contact-list-block { margin: 0 0 0.8rem 0; }
           .contact-block { margin: 0 0 0.55rem 0; }
           .contact-title { margin-top: 0.15rem; font-weight: 700; color: #333; }
-          .location-card { display: table; width: 100%; table-layout: fixed; margin-top: 0.12rem; }
-          .location-col { display: table-cell; width: 50%; vertical-align: top; padding-right: 0.45rem; }
-          .location-col + .location-col { padding-right: 0; padding-left: 0.45rem; }
           .address-cell .address-line { margin-top: 0.08rem; }
           .address-cell .address-line:first-child { margin-top: 0; }
           .contact-line { margin-top: 0.12rem; color: #444; }
           .contact-key { font-weight: 700; color: #555; }
           .embedded-image { max-height: 100px; max-width: 320px; border: 0; padding: 0; background: transparent; }
-          h1 { margin: 0 0 0.25rem 0; font-size: 1.8rem; }
-          h2 { margin: 0 0 1rem 0; font-size: 1.1rem; font-weight: 500; color: #555; }
+          h1 { margin: 0 0 0.25rem 0; font-size: 2.4rem; }
+          h2 { margin: 0 0 1rem 0; font-size: 1.6rem; font-weight: 500; color: #555; }
           .section { margin-top: 1.4rem; }
-          .section-title { margin: 0 0 0.55rem 0; font-size: 1.15rem; }
-          .table-title { margin: 1rem 0 0.2rem 0; font-size: 1.05rem; }
+          .section-title { margin: 0 0 0.55rem 0; font-size: 1.4rem; }
+          .table-title { margin: 1rem 0 0.2rem 0; font-size: 1.2rem; }
           .table-subtitle { margin: 0 0 0.55rem 0; font-size: 0.9rem; color: #555; }
           .col-meta { display: block; margin-top: 0.2rem; font-size: 0.78rem; color: #666; font-weight: normal; }
           table { border-collapse: collapse; width: 100%; }
@@ -786,8 +816,33 @@
           th { background: #f4f4f4; }
           .empty { color: #888; }
         </style>
+        <script type="text/javascript">
+          function dcxSetLang(lang) {
+            var nodes = document.querySelectorAll('.i18n-value[data-lang]');
+            for (var i = 0; i &lt; nodes.length; i++) {
+              nodes[i].style.display = (nodes[i].getAttribute('data-lang') === lang) ? 'inline' : 'none';
+            }
+
+            var tabs = document.querySelectorAll('.lang-tab[data-lang]');
+            for (var j = 0; j &lt; tabs.length; j++) {
+              var isActive = tabs[j].getAttribute('data-lang') === lang;
+              tabs[j].className = isActive ? 'lang-tab active' : 'lang-tab';
+              tabs[j].setAttribute('aria-selected', isActive ? 'true' : 'false');
+            }
+          }
+
+          document.addEventListener('DOMContentLoaded', function () {
+            var activeTab = document.querySelector('.lang-tab.active') || document.querySelector('.lang-tab[data-lang]');
+            if (!activeTab) {
+              return;
+            }
+            dcxSetLang(activeTab.getAttribute('data-lang'));
+          });
+        </script>
       </head>
       <body>
+
+        <xsl:call-template name="render-language-switcher"/>
 
         <div class="header-grid">
           <div class="header-col left">
